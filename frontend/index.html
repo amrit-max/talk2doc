@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>📄 Talk2Doc Assistant</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  padding: 40px;
+  background: #f7f8fa;
+}
+.container {
+  width: 400px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(0,0,0,0.1);
+}
+input, button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  font-size: 15px;
+}
+button {
+  background: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+}
+button:hover { background: #0056b3; }
+.answer {
+  margin-top: 15px;
+  background: #eee;
+  padding: 10px;
+  border-radius: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>📄 Talk2Doc Assistant</h2>
+
+  <input type="file" id="docFile" accept="application/pdf">
+  <button onclick="uploadDoc()">Upload PDF</button>
+
+  <hr>
+
+  <input type="text" id="question" placeholder="Ask a question about the document...">
+  <button onclick="askDoc()">Ask</button>
+
+  <div id="response" class="answer"></div>
+</div>
+
+<script>
+async function uploadDoc() {
+    let fileInput = document.getElementById("docFile").files[0];
+    if (!fileInput) {
+        alert("Please select a file first!");
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append("file", fileInput);
+
+    await fetch("http://localhost:8000/upload", {
+        method: "POST",
+        body: formData
+    });
+
+    alert("Document Uploaded Successfully!");
+}
+
+async function askDoc() {
+    let q = document.getElementById("question").value;
+    if (!q) {
+        alert("Please type a question!");
+        return;
+    }
+
+    let res = await fetch("http://localhost:8000/ask?question=" + q);
+    let data = await res.json();
+    document.getElementById("response").innerText = data.answer;
+}
+</script>
+
+</body>
+</html>
