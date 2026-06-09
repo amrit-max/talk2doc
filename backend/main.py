@@ -3,14 +3,15 @@ import os
 import requests
 from fastapi import FastAPI, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
+from dotenv import load_dotenv, find_dotenv
 
 
 from sentence_transformers import SentenceTransformer
 import faiss
 import numpy as np
 
-load_dotenv()
+load_dotenv(find_dotenv())
+
 
 app = FastAPI()
 
@@ -22,8 +23,8 @@ app.add_middleware(
 )
 
 OPENROUTER_API = os.getenv("OPENROUTER_API_KEY")
-if not OPENROUTER_API:
-    raise Exception("Add OPENROUTER_API_KEY in .env")
+print("Loaded OPENROUTER_API_KEY:", "SET" if OPENROUTER_API else "MISSING")
+
 
 
 extracted_chunks = []
@@ -63,6 +64,7 @@ async def upload_file(file: UploadFile):
     if not file.filename.endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Only PDF files allowed")
 
+    os.makedirs("temp", exist_ok=True)
     content = await file.read()
     file_path = f"temp/{file.filename}"
     with open(file_path, "wb") as f:
@@ -84,8 +86,15 @@ async def upload_file(file: UploadFile):
 
 @app.get("/ask")
 async def ask(question: str):
+    load_dotenv(find_dotenv())
+
+    api_key = os.getenv("OPENROUTER_API_KEY") or OPENROUTER_API
+
     if not extracted_chunks:
         return {"answer": "Upload a document first."}
+
+    if not api_key:
+        return {"answer": "⚠️ OPENROUTER_API_KEY is not set. Please create/edit the backend/.env file with OPENROUTER_API_KEY=your_key and ask again."}
 
    
     context_chunks = search_chunks(question)
@@ -111,7 +120,7 @@ Answer the question based on the above context.
     response = requests.post(
         "https://openrouter.ai/api/v1/chat/completions",
         headers={
-            "Authorization": f"Bearer {OPENROUTER_API}",
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         },
         json={
