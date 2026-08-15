@@ -1,6 +1,6 @@
 # Talk2Doc AI — Premium AI Document Assistant
 
-Talk2Doc is a full-stack web application that allows you to upload PDF documents and converse with them. It instantly analyzes, extracts facts, and answers questions based on your document using local FAISS embeddings and the OpenRouter API.
+Talk2Doc is a full-stack web application that allows you to upload large PDF documents and converse with them. It instantly analyzes, extracts facts, and answers questions based on your document using local FAISS embeddings and the OpenRouter API.
 
 ## 🚀 Features
 
